@@ -24,16 +24,24 @@ def send_message():
     
     text = payload["text"]
     topics = payload["topics"]
-    
+
+    filters = ""
+    if topics != "All":
+        list_topics: list = ["topic:" + topic for topic in topics.split(',')]
+        filters = ' OR '.join(list_topics)
+
     payload = json.dumps({
         "query": "text: " + text,
-        "limit": 20
+        "limit": 20,
+        "filter": [
+            filters
+        ]
     })
     
     headers = {
         'Content-Type': 'application/json'
     }
-    
+
     response = requests.request("GET", url, headers=headers, data=payload)
     ret: dict = get_processed_message(response.json())
 
