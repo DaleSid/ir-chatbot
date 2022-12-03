@@ -18,7 +18,7 @@ def hello():
     return '<h1>Hello, World!</h1>'
 
 
-@app.route('/send')
+@app.route('/send', methods=['POST'])
 def send_message():
     payload: dict = dict(json.loads(request.get_data()))
     
