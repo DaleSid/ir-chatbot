@@ -1,7 +1,8 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 import random
-
-from flask import Flask, request
 import json
+import csv
 import requests
 import logging
 
@@ -15,9 +16,10 @@ from transformers import BertModel
 logger = logging.getLogger()
 
 app = Flask(__name__)
+CORS(app)
 
-IP = "localhost"
-url = "http://34.124.115.77:8983/solr/chitchat/query?fl=text, reply, score, topic"
+IP = "0.0.0.0"
+url = "http://localhost:8983/solr/chitchat/query?fl=text, reply, score, topic"
 
 class BertClassifier(nn.Module):
 
@@ -43,7 +45,7 @@ class BertClassifier(nn.Module):
 def hello():
     return '<h1>Hello, World!</h1>'
 
-@app.route('/send', methods=['POST'])
+@app.route('/send', methods=['POST','OPTIONS'])
 def send_message():
     payload: dict = dict(json.loads(request.get_data()))
     
@@ -55,7 +57,6 @@ def send_message():
         list_topics: list = ["topic:" + topic for topic in topics]
         filters = ' OR '.join(list_topics)
 
-    # print(find_type(text))
     if(find_type(text) == 'chitchat'):
         filters = "topic:chitchat"
     
@@ -73,8 +74,9 @@ def send_message():
 
     response = requests.request("GET", url, headers=headers, data=payload)
     ret: dict = get_processed_message(response.json())
-
-    return ret
+    response = jsonify(ret)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 def find_type(text: str):
     labels = {
@@ -90,8 +92,6 @@ def find_type(text: str):
     input_id = texts['input_ids'].squeeze(1).to(device)
 
     output = model(input_id, mask)
-    # print('Query:', text)
-    # print(list(labels.keys())[(torch.argmax(output).item())])
     return list(labels.keys())[(torch.argmax(output).item())]
 
 def get_processed_message(response: dict) -> dict:
