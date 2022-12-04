@@ -31,7 +31,7 @@ def send_message():
         filters = ' OR '.join(list_topics)
 
     payload = json.dumps({
-        "query": "text: " + text,
+        "query": "text: " + text.replace(" ", "+"),
         "limit": 20,
         "filter": [
             filters
