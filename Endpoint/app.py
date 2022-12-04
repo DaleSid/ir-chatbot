@@ -10,7 +10,7 @@ logger = logging.getLogger()
 app = Flask(__name__)
 
 IP = "localhost"
-url = "http://34.130.53.103:8983/solr/chitchat/query?fl=text, reply, score, topic"
+url = "http://34.124.115.77:8983/solr/chitchat/query?fl=text, reply, score, topic"
 
 
 @app.route('/')
@@ -49,11 +49,20 @@ def send_message():
 
 
 def get_processed_message(response: dict) -> dict:
+    if not response.get("response").get("numFound"):
+        return {
+            "reply": "Sorry!!! couldn't able to find what you are looking for. Try something else",
+            "score": 0,
+            "text":  "",
+            "topic": "",
+            "status": False
+        }
     docs = response.get("response").get("docs")
     sorted_docs = sorted(docs, key=lambda d: d['score'], reverse=True)
     if len(sorted_docs) > 5:
         sorted_docs = sorted_docs[:5]
     final_response = random.choice(sorted_docs)
+    final_response["status"] = True
 
     return final_response
 
