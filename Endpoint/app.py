@@ -10,7 +10,7 @@ logger = logging.getLogger()
 app = Flask(__name__)
 
 IP = "localhost"
-url = "http://34.124.115.77:8983/solr/chitchat/query?fl=text, reply, score, topic"
+url = "http://34.130.53.103:8983/solr/chitchat/query?fl=text, reply, score, topic"
 
 
 @app.route('/')
@@ -27,7 +27,7 @@ def send_message():
 
     filters = ""
     if topics != "All":
-        list_topics: list = ["topic:" + topic for topic in topics.split(',')]
+        list_topics: list = ["topic:" + topic for topic in topics]
         filters = ' OR '.join(list_topics)
 
     payload = json.dumps({
