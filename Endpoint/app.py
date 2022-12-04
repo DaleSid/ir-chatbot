@@ -52,7 +52,7 @@ def send_message():
 
     filters = ""
     if topics != "All":
-        list_topics: list = ["topic:" + topic for topic in topics.split(',')]
+        list_topics: list = ["topic:" + topic for topic in topics]
         filters = ' OR '.join(list_topics)
 
     # print(find_type(text))
@@ -60,7 +60,7 @@ def send_message():
         filters = "topic:chitchat"
     
     payload = json.dumps({
-        "query": "text: " + text,
+        "query": "text: " + text.replace(" ", "+"),
         "limit": 20,
         "filter": [
             filters
@@ -95,11 +95,20 @@ def find_type(text: str):
     return list(labels.keys())[(torch.argmax(output).item())]
 
 def get_processed_message(response: dict) -> dict:
+    if not response.get("response").get("numFound"):
+        return {
+            "reply": "Sorry!!! couldn't able to find what you are looking for. Try something else",
+            "score": 0,
+            "text":  "",
+            "topic": "",
+            "status": False
+        }
     docs = response.get("response").get("docs")
     sorted_docs = sorted(docs, key=lambda d: d['score'], reverse=True)
     if len(sorted_docs) > 5:
         sorted_docs = sorted_docs[:5]
     final_response = random.choice(sorted_docs)
+    final_response["status"] = True
 
     return final_response
 
